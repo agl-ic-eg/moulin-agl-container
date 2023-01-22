@@ -1,0 +1,66 @@
+desc: "AGL IC Container Integrations"
+variables:
+  MACHINE: "h3ulcb"
+  AGL_FEATURES_HW_APPEND: ""
+common_data:
+  sources: &COMMON_SOURCES
+      - type: repo
+        url: https://github.com/agl-ic-eg/AGL-repo.git
+        rev: ces2023
+        manifest: needlefish_14.0.2.xml
+  conf: &COMMON_CONF
+    - [DL_DIR, "${TOPDIR}/../../agl_storage/downloads"]
+
+components:
+  agl-ic:
+    build-dir: agl-ic
+    default: false
+    sources:
+      - *COMMON_SOURCES
+    builder:
+      type: agl
+      work_dir: build-ic
+      agl_features: "agl-ic-container %{AGL_FEATURES_HW_APPEND}"
+      agl_machine: "%{MACHINE}"
+      conf:
+        - *COMMON_CONF
+        - [AGL_EXTRA_IMAGE_FSTYPES, "tar.bz2 ext4"]
+      build_target: agl-container-demo-host
+      target_images:
+        - "tmp/deploy/images/%{MACHINE}/agl-container-demo-host-%{MACHINE}.ext4"
+
+  agl-ivi:
+    build-dir: agl-ivi
+    default: true
+    sources:
+      - *COMMON_SOURCES
+    builder:
+      type: agl
+      work_dir: build-ivi
+      agl_features: "agl-demo agl-flutter agl-demo-ces2023 %{AGL_FEATURES_HW_APPEND}"
+      agl_machine: "%{MACHINE}"
+      conf:
+        - *COMMON_CONF
+        - [AGL_EXTRA_IMAGE_FSTYPES, "tar.bz2 ext4"]
+      build_target: agl-demo-platform agl-demo-platform-html5 agl-ivi-demo-platform-flutter
+      target_images:
+        - "tmp/deploy/images/%{MACHINE}/agl-demo-platform-%{MACHINE}.ext4"
+        - "tmp/deploy/images/%{MACHINE}/agl-demo-platform-html5-%{MACHINE}.ext4"
+        - "tmp/deploy/images/%{MACHINE}/agl-ivi-demo-platform-flutter-%{MACHINE}.ext4"
+
+parameters:
+  # Machines
+  MACHINE:
+    desc: "RCAR Gen3-based device"
+    h3ulcb:
+      default: false
+      overrides:
+        variables:
+          MACHINE: "h3ulcb"
+    aglrefhw:
+      default: true
+      overrides:
+        variables:
+          MACHINE: "h3ulcb"
+          AGL_FEATURES_HW_APPEND: "agl-refhw-h3"
+                  
